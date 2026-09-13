@@ -16,7 +16,7 @@ import pandas as pd
 # CONFIG
 # ============================================================
 
-PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc")
+PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc/analisis")
 CLEAN_DIR = PROJECT_ROOT / "datos" / "limpios"
 
 DEMOGRAFICOS_FILE = CLEAN_DIR / "demograficos_limpios.csv"

@@ -26,7 +26,7 @@ import pandas as pd
 # RUTAS — AJUSTAR el nombre del archivo REDCap crudo si cambió
 # ============================================================
 
-PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc")
+PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc/analisis")
 RAW_DIR = PROJECT_ROOT / "datos" / "crudos" / "redcap"
 CLEAN_DIR = PROJECT_ROOT / "datos" / "limpios"
 

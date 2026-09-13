@@ -16,7 +16,7 @@ import pandas as pd
 # CONFIG
 # ============================================================
 
-PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc")
+PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc/analisis")
 RAW_DIR = PROJECT_ROOT / "datos" / "crudos" / "psychopy"
 CLEAN_DIR = PROJECT_ROOT / "datos" / "limpios"
 CLEAN_DIR.mkdir(parents=True, exist_ok=True)

@@ -14,7 +14,7 @@ import pandas as pd
 # CONFIG
 # ============================================================
 
-PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc")
+PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc/analisis")
 CLEAN_DIR = PROJECT_ROOT / "datos" / "limpios"
 OUTPUTS_QC = PROJECT_ROOT / "outputs" / "control_calidad"
 OUTPUTS_QC.mkdir(parents=True, exist_ok=True)

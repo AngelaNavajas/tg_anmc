@@ -19,7 +19,6 @@ import pandas as pd
 # CONFIG
 # ============================================================
 
-PROJECT_ROOT = Path("/Users/angelanavajas/Desktop/anmc")
 RAW_DIR = PROJECT_ROOT / "datos" / "crudos" / "redcap"
 CLEAN_DIR = PROJECT_ROOT / "datos" / "limpios"
 CLEAN_DIR.mkdir(parents=True, exist_ok=True)
@@ -103,8 +102,7 @@ print(f"Total excluidos:                {len(excluidos_ids)}")
 print(f"Participantes incluidos:        {len(incluidos)}")
 print("\nPor grupo:")
 print(incluidos["grupo"].value_counts().to_string())
-print("\nNOTA: criterio de HADS pendiente de decisión de mentores "
-      "(no aplicado como exclusión en esta versión).")
+
 
 incluidos.to_csv(INCLUIDOS_OUT, index=False)
 excl_df.to_csv(EXCLUSIONES_OUT, index=False)
