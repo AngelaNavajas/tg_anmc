@@ -178,27 +178,77 @@ for outcome in OUTCOMES:
 tabla2 = pd.DataFrame(filas_h1)
 tabla2.to_csv(OUTPUT_DIR / "tabla2_h1_bart_por_grupo.csv", index=False)
 
-
 # ============================================================
 # TABLA 3 — PROCESSING SPEED POR GRUPO (N=73)
+#
+# Para SRT, CRT y Digit Symbol se verifica homogeneidad de
+# varianzas (Levene) y se aplica Welch cuando corresponde. El
+# composite no se testea acá: su significación como predictor se
+# reporta en Tabla 5 (PROCESS, HC3).
 # ============================================================
 
+def welch_hedges(joven, mayor):
+    joven = pd.to_numeric(pd.Series(joven), errors="coerce").dropna()
+    mayor = pd.to_numeric(pd.Series(mayor), errors="coerce").dropna()
+
+    n1, n2 = len(joven), len(mayor)
+    v1, v2 = joven.var(ddof=1), mayor.var(ddof=1)
+
+    t_stat, p_value = stats.ttest_ind(mayor, joven, equal_var=False)
+    df_welch = (v1/n1 + v2/n2)**2 / ((v1/n1)**2/(n1-1) + (v2/n2)**2/(n2-1))
+
+    diferencia = mayor.mean() - joven.mean()
+    df_pooled = n1 + n2 - 2
+    pooled_sd = np.sqrt(((n1-1)*v1 + (n2-1)*v2) / df_pooled)
+    cohen_d = diferencia / pooled_sd
+    hedges_g = cohen_d * (1 - 3 / (4*df_pooled - 1))
+
+    return {"t": t_stat, "df": df_welch, "p": p_value, "hedges_g": hedges_g}
+
+
 PS_VARS = {"median_srt": "SRT mediana (ms)", "median_crt": "CRT mediana (ms)",
-           "median_ds": "Digit Symbol mediana (ms)", "processing_speed": "Processing Speed (composite)"}
+           "median_ds": "Digit Symbol mediana (ms)"}
 
 filas_ps = []
 for var, label in PS_VARS.items():
-    r = comparar_grupos(jovenes_ps[var], mayores_ps[var])
+    levene_stat, levene_p = stats.levene(jovenes_ps[var], mayores_ps[var])
+
+    if levene_p < .05:
+        r_test = welch_hedges(jovenes_ps[var], mayores_ps[var])
+        prueba = "Welch"
+        df_str = f"{r_test['df']:.1f}"
+    else:
+        r_full = comparar_grupos(jovenes_ps[var], mayores_ps[var])
+        r_test = {"t": r_full["t"], "df": r_full["df"], "p": r_full["p"], "hedges_g": r_full["hedges_g"]}
+        prueba = "Student"
+        df_str = str(r_test["df"])
+
+    r_desc = comparar_grupos(jovenes_ps[var], mayores_ps[var])
+
     filas_ps.append({
         "Medida": label,
-        "Jóvenes N": r["n_joven"], "Jóvenes M": round(r["media_joven"], 2), "Jóvenes SD": round(r["sd_joven"], 2),
-        "Mayores N": r["n_mayor"], "Mayores M": round(r["media_mayor"], 2), "Mayores SD": round(r["sd_mayor"], 2),
+        "Jóvenes N": r_desc["n_joven"], "Jóvenes M": round(r_desc["media_joven"], 2), "Jóvenes SD": round(r_desc["sd_joven"], 2),
+        "Mayores N": r_desc["n_mayor"], "Mayores M": round(r_desc["media_mayor"], 2), "Mayores SD": round(r_desc["sd_mayor"], 2),
+        "Levene_p": round(levene_p, 4), "Prueba": prueba,
+        "t": round(r_test["t"], 2), "df": df_str, "p": round(r_test["p"], 4),
+        "Hedges_g": round(r_test["hedges_g"], 2),
     })
+
+# Fila del composite: solo descriptivos, sin inferencia (ver Tabla 5)
+r_comp = comparar_grupos(jovenes_ps["processing_speed"], mayores_ps["processing_speed"])
+filas_ps.append({
+    "Medida": "Processing Speed (composite)",
+    "Jóvenes N": r_comp["n_joven"], "Jóvenes M": round(r_comp["media_joven"], 2), "Jóvenes SD": round(r_comp["sd_joven"], 2),
+    "Mayores N": r_comp["n_mayor"], "Mayores M": round(r_comp["media_mayor"], 2), "Mayores SD": round(r_comp["sd_mayor"], 2),
+    "Levene_p": None, "Prueba": "Ver Tabla 5 (HC3)",
+    "t": None, "df": None, "p": None, "Hedges_g": None,
+})
 
 tabla3 = pd.DataFrame(filas_ps)
 tabla3.to_csv(OUTPUT_DIR / "tabla3_processing_speed_por_grupo.csv", index=False)
 
-
+print("\nTabla 3 (con Levene y prueba condicional):")
+print(tabla3.to_string(index=False))
 # ============================================================
 # TABLA 4 — CORRELACIONES (N=73)
 # ============================================================
@@ -273,6 +323,7 @@ tabla5 = pd.DataFrame(resultados_lineal)
 cols_num = tabla5.select_dtypes(include=[np.number]).columns
 tabla5[cols_num] = tabla5[cols_num].round(4)
 tabla5.to_csv(OUTPUT_DIR / "tabla5_h1_modelo_lineal.csv", index=False)
+
 
 # ============================================================
 # TABLA A1 — HADS ANSIEDAD/DEPRESIÓN POR GRUPO (N=74)
